@@ -1,0 +1,34 @@
+{
+    "manufacturer": "evau",
+    "keyboard_name": "pixwitch",
+    "maintainer": "EvanSux",
+    "bootloader": "caterina",
+    "diode_direction": "COL2ROW",
+    "features": {
+        "bootmagic": true,
+        "command": false,
+        "console": false,
+        "extrakey": true,
+        "mousekey": true,
+        "nkro": true
+    },
+    "matrix_pins": {
+        "cols": ["D6"],
+        "rows": ["B6", "B5"]
+    },
+    "processor": "atmega32u4",
+    "url": "",
+    "usb": {
+        "device_version": "0.0.1",
+        "pid": "0x0001",
+        "vid": "0x6561"
+    },
+    "layouts": {
+        "LAYOUT": {
+            "layout": [
+                { "matrix": [0, 0], "x": 0, "y": 0 },
+                { "matrix": [1, 0], "x": 0, "y": 1 }
+            ]
+        }
+    }
+}
