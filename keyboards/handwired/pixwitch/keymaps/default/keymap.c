@@ -3,23 +3,58 @@
 
 #include QMK_KEYBOARD_H
 
+enum custom_keycodes {
+  SWITCH_ENC = SAFE_RANGE
+};
+
+uint8_t encoder_mode = 1;
+
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
+[0] = LAYOUT(
+                                    SWITCH_ENC, KC_MPRV,    KC_MNXT,
+    KC_NUM,  KC_P0,   KC_PDOT,      C(KC_0),    KC_1,       KC_2,
+    KC_P7,   KC_P8,   KC_P9,        KC_V,       KC_F3,      KC_F4,
+    KC_P4,   KC_P5,   KC_P6,        KC_F5,      KC_F6,      KC_B,
+    KC_P1,   KC_P2,   KC_P3,        MEH(KC_W),  C(KC_J),    KC_H)
+};
 
-    [0] = LAYOUT(KC_P7, KC_P8)};
-
-
-
-static void render_logo(void) {
-    static const char PROGMEM qmk_logo[] = {
-        0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F, 0x90, 0x91, 0x92, 0x93, 0x94,
-        0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0xA9, 0xAA, 0xAB, 0xAC, 0xAD, 0xAE, 0xAF, 0xB0, 0xB1, 0xB2, 0xB3, 0xB4,
-        0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7, 0xC8, 0xC9, 0xCA, 0xCB, 0xCC, 0xCD, 0xCE, 0xCF, 0xD0, 0xD1, 0xD2, 0xD3, 0xD4, 0x00
-    };
-
-    oled_write_P(qmk_logo, false);
+bool encoder_update_user(uint8_t index, bool clockwise) {
+  if (index == 0) { // Replace 0 with the index of your encoder if you have multiple encoders
+    switch (encoder_mode) {
+      case 0:
+        // Encoder function for mode 0 (e.g., volume control)
+        if (clockwise) {
+          tap_code16_delay(KC_G, 10);
+        } else {
+          tap_code16_delay(KC_L, 10);
+        }
+        break;;
+      case 1:
+        // Encoder function for mode 1 (e.g., brush size)
+        if (clockwise) {
+          // Increase brush size
+          // Replace with the appropriate keycode or function
+          tap_code16_delay(KC_VOLU, 10);
+        } else {
+          // Decrease brush size
+          // Replace with the appropriate keycode or function
+          tap_code16_delay(KC_VOLD, 10);
+        }
+        break;
+      // Add more cases for additional modes
+    }
+  }
+  return false;
 }
 
-bool oled_task_user(void) {
-    render_logo();
-    return false;
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+  switch (keycode) {
+    case SWITCH_ENC:
+      if (record->event.pressed) {
+        encoder_mode = (encoder_mode + 1) % 2; // Change 2 to the number of encoder modes you have
+      }
+      return false;
+    default:
+      return true;
+  }
 }

@@ -2,15 +2,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
-
-#define ENCODERS_PAD_A \
-    { D4 }
-#define ENCODERS_PAD_B \
-    { C6 }
-
-#define ENCODER_DIRECTION_FLIP
-
-#define ENCODER_RESOLUTION 4
+#define ENCODER_DEFAULT_POS 0x3
 
 /*
  * Feature disable options
