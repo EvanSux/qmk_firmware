@@ -6,16 +6,15 @@
     "usb": {
         "device_version": "0.0.2",
         "pid": "0x0001",
-        "vid": "0x6561",
-        "force_nkro": true
+        "vid": "0x6561"
     },
     "build": {
         "lto": true
     },
     "features": {
         "bootmagic": true,
-        "command": false,
-        "console": false,
+        "command": true,
+        "console": true,
         "extrakey": true,
         "mousekey": true,
         "nkro": true,
@@ -28,20 +27,24 @@
             "rainbow_mood": true,
             "rainbow_swirl": true,
             "static_gradient": true,
-            "rgb_test": true
+            "rgb_test": true,
+            "rgb_twinkle": true
         },
+        "driver": "ws2812",
         "default": {
-            "animation": "rgb_test"
+            "animation": "rainbow_mood",
+            "on": true,
+            "val": 128
         }
     },
     "ws2812": {
-        "pin": "B1"
+        "pin": "D4"
     },
     "encoder": {
         "rotary": [
             {
                 "pin_a": "F0",
-                "pin_b": "F1",
+                "pin_b": "E6",
                 "resolution": 4
             },
             {
@@ -62,8 +65,8 @@
         ]
     },
     "matrix_pins": {
-        "cols": ["D6", "B7", "B6", "B5", "B4", "E6"],
-        "rows": ["C7", "F7", "F6", "F5", "F4"]
+        "cols": ["C7", "F6", "F5", "F7", "F4", "F1"],
+        "rows": ["D6", "B7", "B6", "B5", "B4"]
     },
     "diode_direction": "COL2ROW",
     "processor": "atmega32u4",
@@ -74,6 +77,9 @@
                 { "matrix": [0,0], "x": 3.25, "y": 0, "w": 1.25, "h": 1.25 },
                 { "matrix": [0,1], "x": 4.75, "y": 0.25 },
                 { "matrix": [0,2], "x": 6, "y": 0.25 },
+                { "matrix": [0,3], "x": 8.25, "y": 4, "w": 1.25, "h": 1.25 },
+                { "matrix": [0,4], "x": 10.75, "y": 5.25 },
+                { "matrix": [0,5], "x": 12, "y": 6.25 },
 
                 { "matrix": [1,0], "x": 0, "y": 1.75 },
                 { "matrix": [1,1], "x": 1, "y": 1.75 },
