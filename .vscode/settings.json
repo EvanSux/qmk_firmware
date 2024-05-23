@@ -39,5 +39,6 @@
             ],
             "url": "https://raw.githubusercontent.com/qmk/qmk_firmware/master/data/schemas/keyboard.jsonschema"
         }
-    ]
+    ],
+    "python.analysis.typeCheckingMode": "basic"
 }

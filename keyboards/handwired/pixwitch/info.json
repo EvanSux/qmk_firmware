@@ -13,12 +13,16 @@
     },
     "features": {
         "bootmagic": true,
-        "command": true,
-        "console": true,
+        "command": false,
+        "console": false,
         "extrakey": true,
-        "mousekey": true,
-        "nkro": true,
+        "mousekey": false,
+        "nkro": false,
         "rgblight": true
+    },
+    "bootmagic": {
+        "enabled": true,
+        "matrix": [0, 5]
     },
     "rgblight": {
         "led_count": 2,
@@ -34,7 +38,7 @@
         "default": {
             "animation": "rainbow_mood",
             "on": true,
-            "val": 128
+            "val": 255
         }
     },
     "ws2812": {
@@ -43,13 +47,8 @@
     "encoder": {
         "rotary": [
             {
-                "pin_a": "F0",
-                "pin_b": "E6",
-                "resolution": 4
-            },
-            {
-                "pin_a": "F0",
-                "pin_b": "B3",
+                "pin_a": "D3",
+                "pin_b": "C6",
                 "resolution": 4
             },
             {
@@ -58,8 +57,13 @@
                 "resolution": 4
             },
             {
-                "pin_a": "B1",
-                "pin_b": "C6",
+                "pin_a": "F0",
+                "pin_b": "B3",
+                "resolution": 4
+            },
+            {
+                "pin_a": "D2",
+                "pin_b": "E6",
                 "resolution": 4
             }
         ]
@@ -79,7 +83,7 @@
                 { "matrix": [0,2], "x": 6, "y": 0.25 },
                 { "matrix": [0,3], "x": 8.25, "y": 4, "w": 1.25, "h": 1.25 },
                 { "matrix": [0,4], "x": 10.75, "y": 5.25 },
-                { "matrix": [0,5], "x": 12, "y": 6.25 },
+                { "matrix": [0,5], "x": 12, "y": 6.25, "encoder": 3},
 
                 { "matrix": [1,0], "x": 0, "y": 1.75 },
                 { "matrix": [1,1], "x": 1, "y": 1.75 },
@@ -105,9 +109,9 @@
                 { "matrix": [4,0], "x": 0, "y": 4.75 },
                 { "matrix": [4,1], "x": 1, "y": 4.75 },
                 { "matrix": [4,2], "x": 2, "y": 4.75 },
-                { "matrix": [4,3], "x": 3.5, "y": 4.75 },
-                { "matrix": [4,4], "x": 4.75, "y": 4.75 },
-                { "matrix": [4,5], "x": 6, "y": 4.75 }
+                { "matrix": [4,3], "x": 3.5, "y": 4.75, "encoder": 0 },
+                { "matrix": [4,4], "x": 4.75, "y": 4.75, "encoder": 1 },
+                { "matrix": [4,5], "x": 6, "y": 4.75, "encoder": 2 }
             ]
         }
     }

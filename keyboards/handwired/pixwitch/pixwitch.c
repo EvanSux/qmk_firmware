@@ -17,8 +17,3 @@
 #include "quantum.h"
 
 bool numlock_set = true;
-
-void matrix_init_user(void) {
-    oled_driver_init();
-    oled_clear();
-}
