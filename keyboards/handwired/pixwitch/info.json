@@ -1,10 +1,10 @@
 {
     "manufacturer": "evau",
     "keyboard_name": "pixwitch",
-    "maintainer": "EvanSux",
-    "url": "",
+    "maintainer": "evau",
+    "url": "evau.tv",
     "usb": {
-        "device_version": "0.0.2",
+        "device_version": "0.5.1",
         "pid": "0x0001",
         "vid": "0x6561"
     },
@@ -28,11 +28,7 @@
         "led_count": 2,
         "sleep": false,
         "animations": {
-            "rainbow_mood": true,
-            "rainbow_swirl": true,
-            "static_gradient": true,
-            "rgb_test": true,
-            "rgb_twinkle": true
+            "rainbow_mood": true
         },
         "driver": "ws2812",
         "default": {
@@ -47,23 +43,23 @@
     "encoder": {
         "rotary": [
             {
-                "pin_a": "D3",
-                "pin_b": "C6",
+                "pin_a": "C6",
+                "pin_b": "D3",
                 "resolution": 4
             },
             {
-                "pin_a": "B1",
-                "pin_b": "D7",
+                "pin_a": "D7",
+                "pin_b": "B1",
                 "resolution": 4
             },
             {
-                "pin_a": "F0",
-                "pin_b": "B3",
+                "pin_a": "B3",
+                "pin_b": "F0",
                 "resolution": 4
             },
             {
-                "pin_a": "D2",
-                "pin_b": "E6",
+                "pin_a": "E6",
+                "pin_b": "D2",
                 "resolution": 4
             }
         ]
@@ -78,40 +74,40 @@
     "layouts": {
         "LAYOUT": {
             "layout": [
-                { "matrix": [0,0], "x": 3.25, "y": 0, "w": 1.25, "h": 1.25 },
-                { "matrix": [0,1], "x": 4.75, "y": 0.25 },
-                { "matrix": [0,2], "x": 6, "y": 0.25 },
-                { "matrix": [0,3], "x": 8.25, "y": 4, "w": 1.25, "h": 1.25 },
-                { "matrix": [0,4], "x": 10.75, "y": 5.25 },
-                { "matrix": [0,5], "x": 12, "y": 6.25, "encoder": 3},
+                { "matrix": [0, 0], "x": 3.25, "y": 0, "w": 1.25, "h": 1.25 },
+                { "matrix": [0, 1], "x": 4.75, "y": 0.25 },
+                { "matrix": [0, 2], "x": 6, "y": 0.25 },
+                { "matrix": [0, 3], "x": 8.25, "y": 4, "w": 1.25, "h": 1.25 },
+                { "matrix": [0, 4], "x": 10.75, "y": 5.25 },
+                { "matrix": [0, 5], "x": 12, "y": 6.25, "encoder": 3 },
 
-                { "matrix": [1,0], "x": 0, "y": 1.75 },
-                { "matrix": [1,1], "x": 1, "y": 1.75 },
-                { "matrix": [1,2], "x": 2, "y": 1.75 },
-                { "matrix": [1,3], "x": 3.5, "y": 1.5 },
-                { "matrix": [1,4], "x": 4.75, "y": 1.5 },
-                { "matrix": [1,5], "x": 6, "y": 1.5 },
+                { "matrix": [1, 0], "x": 0, "y": 1.75 },
+                { "matrix": [1, 1], "x": 1, "y": 1.75 },
+                { "matrix": [1, 2], "x": 2, "y": 1.75 },
+                { "matrix": [1, 3], "x": 3.5, "y": 1.5 },
+                { "matrix": [1, 4], "x": 4.75, "y": 1.5 },
+                { "matrix": [1, 5], "x": 6, "y": 1.5 },
 
-                { "matrix": [2,0], "x": 0, "y": 2.75 },
-                { "matrix": [2,1], "x": 1, "y": 2.75 },
-                { "matrix": [2,2], "x": 2, "y": 2.75 },
-                { "matrix": [2,3], "x": 3.5, "y": 2.75 },
-                { "matrix": [2,4], "x": 4.75, "y": 2.75 },
-                { "matrix": [2,5], "x": 6, "y": 2.75 },
+                { "matrix": [2, 0], "x": 0, "y": 2.75 },
+                { "matrix": [2, 1], "x": 1, "y": 2.75 },
+                { "matrix": [2, 2], "x": 2, "y": 2.75 },
+                { "matrix": [2, 3], "x": 3.5, "y": 2.75 },
+                { "matrix": [2, 4], "x": 4.75, "y": 2.75 },
+                { "matrix": [2, 5], "x": 6, "y": 2.75 },
 
-                { "matrix": [3,0], "x": 0, "y": 3.75 },
-                { "matrix": [3,1], "x": 1, "y": 3.75 },
-                { "matrix": [3,2], "x": 2, "y": 3.75 },
-                { "matrix": [3,3], "x": 3.5, "y": 3.75 },
-                { "matrix": [3,4], "x": 4.75, "y": 3.75 },
-                { "matrix": [3,5], "x": 6, "y": 3.75 },
+                { "matrix": [3, 0], "x": 0, "y": 3.75 },
+                { "matrix": [3, 1], "x": 1, "y": 3.75 },
+                { "matrix": [3, 2], "x": 2, "y": 3.75 },
+                { "matrix": [3, 3], "x": 3.5, "y": 3.75 },
+                { "matrix": [3, 4], "x": 4.75, "y": 3.75 },
+                { "matrix": [3, 5], "x": 6, "y": 3.75 },
 
-                { "matrix": [4,0], "x": 0, "y": 4.75 },
-                { "matrix": [4,1], "x": 1, "y": 4.75 },
-                { "matrix": [4,2], "x": 2, "y": 4.75 },
-                { "matrix": [4,3], "x": 3.5, "y": 4.75, "encoder": 0 },
-                { "matrix": [4,4], "x": 4.75, "y": 4.75, "encoder": 1 },
-                { "matrix": [4,5], "x": 6, "y": 4.75, "encoder": 2 }
+                { "matrix": [4, 0], "x": 0, "y": 4.75 },
+                { "matrix": [4, 1], "x": 1, "y": 4.75 },
+                { "matrix": [4, 2], "x": 2, "y": 4.75 },
+                { "matrix": [4, 3], "x": 3.5, "y": 4.75, "encoder": 0 },
+                { "matrix": [4, 4], "x": 4.75, "y": 4.75, "encoder": 1 },
+                { "matrix": [4, 5], "x": 6, "y": 4.75, "encoder": 2 }
             ]
         }
     }
