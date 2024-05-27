@@ -62,22 +62,9 @@ void keyboard_post_init_user(void) {
     defer_exec(500, get_host_os, NULL);
 }
 
-void check_encoders(void) {
-    encoder_events_t encoder_events;
-    encoder_retrieve_events(&encoder_events);
-    encoder_event_t event = encoder_events.queue[0];
-    if (event.index == 0 || event.index == 1 || event.index == 2 || event.index == 3) {
-        // Handle the event for any of the encoders
-        if (event.clockwise) {
-            pan_right();
-        } else {
-            pan_left();
-        }
-    }
-}
-
 bool oled_task_user(void) {
-    check_encoders();
     render_anim();
-    return true;
+    check_encoder_changes(&move_right, &blend_factor);
+    incremental_pan(&pan_offset, &blend_factor);
+    return false;
 }
