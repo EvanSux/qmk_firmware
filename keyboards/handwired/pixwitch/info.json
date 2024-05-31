@@ -25,7 +25,7 @@
         "matrix": [0, 5]
     },
     "rgblight": {
-        "led_count": 2,
+        "led_count": 7,
         "sleep": false,
         "animations": {
             "rainbow_mood": true
