@@ -14,11 +14,13 @@
 #include "oled_driver.h"
 #include "util.h"
 #include "encoder_custom.h"
-#include "Z:\_PROJECTS\2024-pixWitch\OUTPUT\dogAnim_F\anim_data_RLE.h"
 
-#define LOGO_FRAMES 1
-#define LOGO_SIZE 512
-#define ANIM_FRAMES 17
+#define LOGO_FRAMES 1 // number of frames in logo animation
+#define LOGO_SIZE 512 // number of bytes in array, minimize for adequate firmware size, max is 1024
+
+#define ANIM_FRAMES 8 // number of frames in animation array
+// #define ANIM_SIZE 672 // number of bytes in array, minimize for adequate firmware size, max is 1024
+
 #define FRAME_WIDTH 168
 #define FRAME_HEIGHT 32
 #define FRAME_SIZE (FRAME_WIDTH * FRAME_HEIGHT / 8)
@@ -26,24 +28,35 @@
 #define SCREEN_HEIGHT 32
 #define SCREEN_SIZE (SCREEN_WIDTH * SCREEN_HEIGHT / 8)
 
-static uint8_t  bytes_drawn[LOGO_SIZE]  = {0};
-static uint16_t drawn_count             = 0;
-static uint16_t hold_logo_delay         = 0;
+/////////////////////////////////////// INIT A BUNCH OF VARS
+
+// Logo animation vars
+static bool     first_start            = true;
+static uint8_t  bytes_drawn[LOGO_SIZE] = {0};
+static uint16_t drawn_count            = 0;
+// static uint8_t  draw_interval          = 1; //draw random logo pixels every ms
+static uint16_t logo_time = 0;
+// Logo holding vars, lmao this is ridiculous
+static uint16_t hold_start_time         = 0;
+static uint16_t hold_duration           = 3000; // Duration to hold the completed logo
+static bool     draw_complete           = false;
 static bool     holding_logo            = false;
+static bool     logo_held               = false;
 const uint8_t   single_bit_masks_out[8] = {127, 191, 223, 239, 247, 251, 253, 254}; // bit masks (thanks mr.qmk) for the fade out animation
 
-static uint8_t  frame_rate_ms   = 100;
+// Main animation vars
+static uint8_t  frame_rate_ms   = 200;
 static uint8_t  frame           = 0;
 static uint16_t anim_timer      = 0;
-static bool     asleep          = false;
+static uint16_t sleep_timeout   = 5000;
+static bool     sleeping        = false;
+static bool     going_to_bed    = false;
 static uint16_t fade_start_time = 0;
 
-typedef enum { INIT, LOGO, MAIN_ANIMATION, FADE_OUT, SLEEPING } AnimState;
-static AnimState state = INIT;
-
-static uint8_t  pan_offset    = 0;
-static uint16_t pan_delay_clk = 0;
-static uint8_t  pan_delay     = 10;
+// Pan animation vars
+static uint8_t  pan_offset    = 0;  // Where the animation is currently panned to
+static uint16_t pan_delay_clk = 0;  // timer for pan delay
+static uint8_t  pan_delay     = 10; // delay between pan steps (in ms)
 static bool     move_right    = false;
 static float    step          = 0.0f;
 static int8_t   blend_factor  = 0;
@@ -85,16 +98,14 @@ static const char PROGMEM logo[1][512] = {
 0x08, 0x00, 0x00, 0x00, 0x00, 0x0f, 0x0f, 0x0f, 0x0f, 0x0f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 },
 };
+#include "Z:\_PROJECTS\2024-pixWitch\OUTPUT\dogAnim_E\anim_data_RLE.h"
 // clang-format on
 
 static void fade_out_display(void) {
-    if (!asleep && (timer_elapsed(fade_start_time) > 8000)) {
-        asleep = true;
-    }
     // Define the reader structure
     oled_buffer_reader_t reader;
     uint8_t              buff_char;
-    if (random() % 100 < 1) {
+    if (random() % 100 < 2) {
         srand(timer_read());
         // Fetch a pointer for the buffer byte at index 0. The return structure
         // will have the pointer and the number of bytes remaining from this
@@ -115,9 +126,13 @@ static void fade_out_display(void) {
 }
 
 static void draw_logo_randomly(void) {
+    // you already did it! don't keep going, my guy
+    if (draw_complete) {
+        return;
+    }
     if (drawn_count >= (LOGO_SIZE)) {
-        hold_logo_delay = timer_read();
-        holding_logo    = true;
+        draw_complete   = true;
+        hold_start_time = timer_read();
         return;
     }
 
@@ -142,7 +157,7 @@ static void draw_logo_randomly(void) {
     }
     uint8_t logo_byte = pgm_read_byte(&logo[0][index]);
     oled_write_raw_byte(logo_byte, index);
-    // logo_time          = timer_read();
+    logo_time          = timer_read();
     bytes_drawn[index] = 1;
     drawn_count++;
     // Expand the range every 8 draws
@@ -151,15 +166,15 @@ static void draw_logo_randomly(void) {
     }
 }
 
-void check_encoder_changes(bool *move_right, int8_t *blend_factor, AnimState *state) {
+void check_encoder_changes(bool *move_right, int8_t *blend_factor) {
     for (uint8_t i = 0; i < 4; i++) {
         uint8_t pin_a_state = encoder_read_pin(i, false);
         uint8_t pin_b_state = encoder_read_pin(i, true);
-        uint8_t enc_state   = pin_a_state | (pin_b_state << 1);
+        uint8_t state       = pin_a_state | (pin_b_state << 1);
 
-        if ((encoder_state[i] & 0x3) != enc_state) {
+        if ((encoder_state[i] & 0x3) != state) {
             uint8_t prev_state = encoder_state[i] & 0x3;
-            uint8_t new_state  = (encoder_state[i] << 2) | enc_state;
+            uint8_t new_state  = (encoder_state[i] << 2) | state;
             int8_t  pulse      = encoder_LUT[new_state & 0xF] - encoder_LUT[prev_state];
 
             encoder_state[i] = new_state;
@@ -169,17 +184,13 @@ void check_encoder_changes(bool *move_right, int8_t *blend_factor, AnimState *st
                     *blend_factor = 10;
                 }
                 *move_right = true;
-                frame       = 8;
-                asleep      = false;
-                *state      = MAIN_ANIMATION;
+                frame       = 0;
             } else if (pulse < 0) {
                 if (move_right) {
                     *blend_factor = 10;
                 }
                 *move_right = false;
                 frame       = 0;
-                asleep      = false;
-                *state      = MAIN_ANIMATION;
             }
         }
     }
@@ -221,6 +232,8 @@ void incremental_pan(uint8_t *pan_offset, int8_t *blend_factor) {
         } else {
             step = 1.0f;
         }
+        *blend_factor = MAX(*blend_factor - 1, 0);
+        pan_delay_clk = timer_read();
     } else {
         *pan_offset = ((blendB * to) + (blendA * from)) / (blendA + blendB);
         if (step > 0.0f) {
@@ -228,16 +241,12 @@ void incremental_pan(uint8_t *pan_offset, int8_t *blend_factor) {
         } else {
             step = 0.0f;
         }
+        *blend_factor = MAX(*blend_factor - 1, 0);
+        pan_delay_clk = timer_read();
     }
-    *blend_factor = MAX(*blend_factor - 1, 0);
-    pan_delay_clk = timer_read();
 }
 
 void update_frame(void) {
-    if (!is_oled_on()) {
-        oled_on();
-    }
-    static uint8_t loopLimit          = 2;
     int            RLE_index          = 0;
     uint16_t       uncompressed_index = 0;
     const char    *compressed_frame   = (const char *)pgm_read_ptr(&compressed_anim[frame]);
@@ -265,52 +274,46 @@ void update_frame(void) {
     }
     frame++;
     anim_timer = timer_read();
-
-    if (loopLimit > 0) {
-        if (frame >= ANIM_FRAMES) {
-            frame = 0;
-            loopLimit--;
-        }
+    if (frame >= ANIM_FRAMES) {
+        frame = 0;
     }
 }
 
 void render_anim(void) {
-    switch (state) {
-        case INIT:
-            pan_delay_clk = timer_read();
-            state         = LOGO;
-            break;
-
-        case LOGO:
-            if (!holding_logo) {
-                draw_logo_randomly();
-            } else if (timer_elapsed(hold_logo_delay) >= 3000) {
-                state = MAIN_ANIMATION;
-            }
-            break;
-
-        case MAIN_ANIMATION:
-            if (timer_elapsed(anim_timer) > frame_rate_ms && frame < ANIM_FRAMES) {
-                update_frame();
-            } else if (!asleep && (timer_elapsed(anim_timer) > 10000)) {
-                fade_start_time = timer_read();
-                state           = FADE_OUT;
-            }
-            break;
-
-        case FADE_OUT:
-            if (!asleep) {
-                fade_out_display();
-            } else {
-                oled_off();
-                state = SLEEPING;
-            }
-            break;
-
-        case SLEEPING:
-            break;
-
-        default:
-            break;
+    // draws the logo if first boot
+    if (first_start) {
+        // oled_clear();
+        logo_time     = timer_read();
+        pan_delay_clk = timer_read();
+        first_start   = false;
+        // continue drawing logo if incomplete
+    } else if (!draw_complete) {
+        draw_logo_randomly();
+        // starts the timer for holding the logo on screen; delays the start of main animation
+    } else if (draw_complete && !holding_logo && !logo_held) {
+        hold_start_time = timer_read();
+        holding_logo    = true;
+    } else if (holding_logo && timer_elapsed(hold_start_time) < hold_duration) {
+        return;
+        // waits for the logo hold timer to finish, then sets a flag to skip logo stuff on the next loop
+    } else if (holding_logo && timer_elapsed(hold_start_time) >= hold_duration) {
+        holding_logo = false;
+        logo_held    = true;
+        // calls the dog animation function and begins the main animation
+    } else if (timer_elapsed(anim_timer) > frame_rate_ms && frame < ANIM_FRAMES) {
+        update_frame();
+    } else if (!sleeping && (timer_elapsed(anim_timer) > sleep_timeout)) {
+        if (!going_to_bed) {
+            going_to_bed    = true;
+            fade_start_time = timer_read();
+        }
+        if (timer_elapsed(fade_start_time) < 3000) {
+            fade_out_display();
+        } else {
+            oled_off();
+            going_to_bed = false;
+        }
+    } else {
+        return;
     }
 }

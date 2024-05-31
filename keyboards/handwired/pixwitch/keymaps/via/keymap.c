@@ -64,7 +64,7 @@ void keyboard_post_init_user(void) {
 
 bool oled_task_user(void) {
     render_anim();
-    check_encoder_changes(&move_right, &blend_factor);
+    check_encoder_changes(&move_right, &blend_factor, &state);
     incremental_pan(&pan_offset, &blend_factor);
     return false;
 }
