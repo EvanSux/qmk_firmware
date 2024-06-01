@@ -14,12 +14,14 @@
 #include "oled_driver.h"
 #include "util.h"
 #include "encoder_custom.h"
-#include "Z:\_PROJECTS\2024-pixWitch\OUTPUT\dogAnim_F\anim_data_RLE.h"
+#include "Z:\_PROJECTS\2024-pixWitch\OUTPUT\dogAnim_G\anim_data_RLE.h"
 
 #define LOGO_FRAMES 1
 #define LOGO_SIZE 512
-#define ANIM_FRAMES 17
+
+#define ANIM_FRAMES 3
 #define FRAME_WIDTH 168
+
 #define FRAME_HEIGHT 32
 #define FRAME_SIZE (FRAME_WIDTH * FRAME_HEIGHT / 8)
 #define SCREEN_WIDTH 128
