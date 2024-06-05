@@ -1,12 +1,13 @@
 // Copyright 2024 evau
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#ifndef MATH
-#    define MATH
+#ifndef _MATH_H_
 #    include <math.h>
 #endif
-
+#include <quantum.h>
 #include <stdint.h>
+#include "stddef.h"
+#include "string.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include "progmem.h"
@@ -14,12 +15,12 @@
 #include "oled_driver.h"
 #include "util.h"
 #include "encoder_custom.h"
-#include "Z:\_PROJECTS\2024-pixWitch\OUTPUT\dogAnim_G\anim_data_RLE.h"
+#include "frames.h"
 
 #define LOGO_FRAMES 1
 #define LOGO_SIZE 512
 
-#define ANIM_FRAMES 3
+#define ANIM_FRAMES 15
 #define FRAME_WIDTH 168
 
 #define FRAME_HEIGHT 32
@@ -35,7 +36,8 @@ static bool     holding_logo            = false;
 const uint8_t   single_bit_masks_out[8] = {127, 191, 223, 239, 247, 251, 253, 254}; // bit masks (thanks mr.qmk) for the fade out animation
 
 static uint8_t  frame_rate_ms   = 100;
-static uint8_t  frame           = 0;
+static uint8_t  current_frame   = 0;
+static int8_t   playTo_frame    = 15;
 static uint16_t anim_timer      = 0;
 static bool     asleep          = false;
 static uint16_t fade_start_time = 0;
@@ -44,6 +46,7 @@ typedef enum { INIT, LOGO, MAIN_ANIMATION, FADE_OUT, SLEEPING } AnimState;
 static AnimState state = INIT;
 
 static uint8_t  pan_offset    = 0;
+static bool     pan_lock      = false;
 static uint16_t pan_delay_clk = 0;
 static uint8_t  pan_delay     = 10;
 static bool     move_right    = false;
@@ -89,33 +92,20 @@ static const char PROGMEM logo[1][512] = {
 };
 // clang-format on
 
-static void fade_out_display(void) {
-    if (!asleep && (timer_elapsed(fade_start_time) > 8000)) {
-        asleep = true;
-    }
-    // Define the reader structure
-    oled_buffer_reader_t reader;
-    uint8_t              buff_char;
-    if (random() % 100 < 1) {
-        srand(timer_read());
-        // Fetch a pointer for the buffer byte at index 0. The return structure
-        // will have the pointer and the number of bytes remaining from this
-        // index position if we want to perform a sequential read by
-        // incrementing the buffer pointer
-        reader = oled_read_raw(0);
-        // Loop over the remaining buffer and erase pixels as we go
-        for (uint16_t i = 0; i < reader.remaining_element_count; i++) {
-            // Get the actual byte in the buffer by dereferencing the pointer
-            buff_char = *reader.current_element;
-            if (buff_char != 0) {
-                oled_write_raw_byte(buff_char & single_bit_masks_out[rand() % 8], i);
-            }
-            // increment the pointer to fetch a new byte during the next loop
-            reader.current_element++;
-        }
+static float bounce_ease_inc(float step) {
+    if (step < 4 / 11.0) {
+        return (121 * step * step) / 16.0;
+    } else if (step < 8 / 11.0) {
+        return (363 / 40.0 * step * step) - (99 / 10.0 * step) + 17 / 5.0;
+    } else if (step < 9 / 10.0) {
+        return (4356 / 361.0 * step * step) - (35442 / 1805.0 * step) + 16061 / 1805.0;
+    } else {
+        return (54 / 5.0 * step * step) - (513 / 25.0 * step) + 268 / 25.0;
     }
 }
-
+static float bounce_ease_dec(float step) {
+    return 1 - bounce_ease_inc(1 - step);
+}
 static void draw_logo_randomly(void) {
     if (drawn_count >= (LOGO_SIZE)) {
         hold_logo_delay = timer_read();
@@ -152,8 +142,38 @@ static void draw_logo_randomly(void) {
         (drawn_count < 16) ? (expand += 1) : (expand += 2);
     }
 }
+static void fade_out_display(void) {
+    if (!asleep && (timer_elapsed(fade_start_time) > 20000)) {
+        asleep = true;
+    }
+    // Define the reader structure
+    oled_buffer_reader_t reader;
+    uint8_t              buff_char;
+    if (random() % 100 < 5) {
+        srand(timer_read());
+        // Fetch a pointer for the buffer byte at index 0. The return structure
+        // will have the pointer and the number of bytes remaining from this
+        // index position if we want to perform a sequential read by
+        // incrementing the buffer pointer
+        reader = oled_read_raw(0);
+        // Loop over the remaining buffer and erase pixels as we go
+        for (uint16_t i = 0; i < reader.remaining_element_count; i++) {
+            // Get the actual byte in the buffer by dereferencing the pointer
+            buff_char = *reader.current_element;
+            if (buff_char != 0) {
+                oled_write_raw_byte(buff_char & single_bit_masks_out[rand() % 8], i);
+            }
+            // increment the pointer to fetch a new byte during the next loop
+            reader.current_element++;
+        }
+    }
+}
 
-void check_encoder_changes(bool *move_right, int8_t *blend_factor, AnimState *state) {
+static void check_encoder_changes(bool *move_right, int8_t *blend_factor, AnimState *state) {
+    if (pan_lock) {
+        return;
+    }
+
     for (uint8_t i = 0; i < 4; i++) {
         uint8_t pin_a_state = encoder_read_pin(i, false);
         uint8_t pin_b_state = encoder_read_pin(i, true);
@@ -168,52 +188,37 @@ void check_encoder_changes(bool *move_right, int8_t *blend_factor, AnimState *st
 
             if (pulse > 0) {
                 if (!move_right) {
-                    *blend_factor = 10;
+                    *blend_factor = 35;
                 }
-                *move_right = true;
-                frame       = 8;
-                asleep      = false;
-                *state      = MAIN_ANIMATION;
+                *move_right   = true;
+                current_frame = 8;
+                playTo_frame  = 15;
+                asleep        = false;
+                *state        = MAIN_ANIMATION;
             } else if (pulse < 0) {
                 if (move_right) {
-                    *blend_factor = 10;
+                    *blend_factor = 35;
                 }
-                *move_right = false;
-                frame       = 0;
-                asleep      = false;
-                *state      = MAIN_ANIMATION;
+                *move_right   = false;
+                current_frame = 0;
+                playTo_frame  = 7;
+                asleep        = false;
+                *state        = MAIN_ANIMATION;
             }
         }
     }
 }
 
-float bounce_ease_inc(float step) {
-    if (step < 4 / 11.0) {
-        return (121 * step * step) / 16.0;
-    } else if (step < 8 / 11.0) {
-        return (363 / 40.0 * step * step) - (99 / 10.0 * step) + 17 / 5.0;
-    } else if (step < 9 / 10.0) {
-        return (4356 / 361.0 * step * step) - (35442 / 1805.0 * step) + 16061 / 1805.0;
-    } else {
-        return (54 / 5.0 * step * step) - (513 / 25.0 * step) + 268 / 25.0;
-    }
-}
-
-float bounce_ease_dec(float step) {
-    return 1 - bounce_ease_inc(1 - step);
-}
-
-void incremental_pan(uint8_t *pan_offset, int8_t *blend_factor) {
+static void incremental_pan(uint8_t *pan_offset, int8_t *blend_factor) {
     // Check if we're allowed to pan
-    if (timer_elapsed(pan_delay_clk) < pan_delay) {
+    if (pan_lock || (timer_elapsed(pan_delay_clk) < pan_delay)) {
         return;
     }
-    // check if we need to pan
 
     uint8_t to   = (uint8_t)round(40 * bounce_ease_inc(step));
     uint8_t from = (uint8_t)round(40 * bounce_ease_dec(step));
 
-    uint8_t blendA = 10 - *blend_factor;
+    uint8_t blendA = 35 - *blend_factor;
     uint8_t blendB = 0 + *blend_factor;
 
     if (move_right) {
@@ -235,28 +240,27 @@ void incremental_pan(uint8_t *pan_offset, int8_t *blend_factor) {
     pan_delay_clk = timer_read();
 }
 
-void update_frame(void) {
+static void update_frame(bool *pan_lock) {
+    *pan_lock = true;
     if (!is_oled_on()) {
         oled_on();
     }
-    static uint8_t loopLimit          = 2;
-    int            RLE_index          = 0;
-    uint16_t       uncompressed_index = 0;
-    const char    *compressed_frame   = (const char *)pgm_read_ptr(&compressed_anim[frame]);
-    static uint8_t byte2write         = 0;
-    uint16_t       cumulative_run     = 0;
+
+    int             RLE_index          = 0;
+    static uint16_t uncompressed_index = 0;
+    const char     *compressed_frame   = (const char *)pgm_read_ptr(&compressed_anim[current_frame]);
+    static uint8_t  byte2write         = 0;
+    uint16_t        cumulative_run     = 0;
 
     // first figure out where on the screen we want to draw
+
     for (uint8_t row = 0; row < (SCREEN_HEIGHT / 8); row++) {
         for (uint8_t col = 0; col < SCREEN_WIDTH; col++) {
             if ((row == 0) && (col == 0)) {
                 RLE_index      = 0;
                 cumulative_run = 0;
             }
-            // now find where in the uncompressed frame the byte we want is
             uncompressed_index = (row * FRAME_WIDTH) + col + pan_offset;
-
-            // next find how far along the cumulitive run that index relates to
             while (cumulative_run <= uncompressed_index) {
                 cumulative_run += (int)pgm_read_byte(&compressed_frame[RLE_index]); // add the run-count at [RLE_index] to the run counter
                 RLE_index += 2;                                                     // increment the rle_index
@@ -265,18 +269,22 @@ void update_frame(void) {
             oled_write_raw_byte(byte2write, (row * SCREEN_WIDTH) + col);  // write the byte and hope it do be
         }
     }
-    frame++;
-    anim_timer = timer_read();
-
-    if (loopLimit > 0) {
-        if (frame >= ANIM_FRAMES) {
-            frame = 0;
-            loopLimit--;
+    *pan_lock = false;
+    if ((timer_elapsed(anim_timer) > frame_rate_ms)) {
+        current_frame++;
+        anim_timer = timer_read();
+        if (current_frame >= playTo_frame) {
+            current_frame = 0;
+            playTo_frame  = 0;
         }
     }
 }
 
-void render_anim(void) {
+static uint8_t  global_throttle = 25;
+static uint16_t global_clk      = 26;
+static void     render_anim(void) {
+    check_encoder_changes(&move_right, &blend_factor, &state);
+    incremental_pan(&pan_offset, &blend_factor);
     switch (state) {
         case INIT:
             pan_delay_clk = timer_read();
@@ -292,12 +300,17 @@ void render_anim(void) {
             break;
 
         case MAIN_ANIMATION:
-            if (timer_elapsed(anim_timer) > frame_rate_ms && frame < ANIM_FRAMES) {
-                update_frame();
-            } else if (!asleep && (timer_elapsed(anim_timer) > 10000)) {
-                fade_start_time = timer_read();
-                state           = FADE_OUT;
+            if (!asleep && (timer_elapsed(fade_start_time) > 10000)) {
+                state = FADE_OUT;
             }
+            if ((timer_elapsed(global_clk) > global_throttle)) {
+                update_frame(&pan_lock);
+                global_clk = timer_read();
+                if (playTo_frame > 0) {
+                    fade_start_time = timer_read();
+                }
+            }
+
             break;
 
         case FADE_OUT:

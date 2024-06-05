@@ -4,7 +4,7 @@
     "maintainer": "evau",
     "url": "evau.tv",
     "usb": {
-        "device_version": "0.5.1",
+        "device_version": "0.6.0",
         "pid": "0x0001",
         "vid": "0x6561"
     },
@@ -18,27 +18,11 @@
         "extrakey": true,
         "mousekey": false,
         "nkro": false,
-        "rgblight": true
+        "rgblight": false
     },
     "bootmagic": {
         "enabled": true,
         "matrix": [0, 5]
-    },
-    "rgblight": {
-        "led_count": 7,
-        "sleep": false,
-        "animations": {
-            "rainbow_mood": true
-        },
-        "driver": "ws2812",
-        "default": {
-            "animation": "rainbow_mood",
-            "on": true,
-            "val": 255
-        }
-    },
-    "ws2812": {
-        "pin": "D4"
     },
     "encoder": {
         "rotary": [

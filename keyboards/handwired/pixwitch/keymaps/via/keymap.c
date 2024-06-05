@@ -4,6 +4,8 @@
 #include QMK_KEYBOARD_H
 #include "animLogic.h"
 
+bool numlock_set = true;
+
 #ifndef MAGIC_ENABLE
 uint16_t keycode_config(uint16_t keycode) {
     return keycode;
@@ -21,24 +23,24 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     //windows layout
 [0] = LAYOUT(
     KC_NO,   KC_NO,   KC_NO,        KC_MPRV,      KC_MNXT,      KC_MPLY,
-    KC_NUM,  KC_P0,   KC_PDOT,      C(KC_0),      MEH(KC_W),    KC_2,
-    KC_P7,   KC_P8,   KC_P9,        KC_V,         KC_F3,        KC_F4,
-    KC_P4,   KC_P5,   KC_P6,        RGB_TOG,      RGB_HUI,    RGB_MOD,
-    KC_P1,   KC_P2,   KC_P3,        KC_1,         KC_2,       KC_3),
+    KC_P7,   KC_P8,   KC_P9,      C(KC_0),      MEH(KC_W),    KC_2,
+    KC_P4,   KC_P5,   KC_P6,        KC_V,         KC_F3,        KC_F4,
+    KC_P1,   KC_P2,   KC_P3,        RGB_TOG,      G(KC_E),      RGB_MOD,
+    KC_NUM,  KC_P0,   KC_PDOT,        KC_4,         KC_5,         KC_6),
 
     //mac layout
 [1] = LAYOUT(
     KC_NO,   KC_NO,   KC_NO,        KC_MPRV,      KC_MNXT,      KC_MPLY,
-    KC_NUM,  KC_P0,   KC_PDOT,      C(KC_0),      MEH(KC_W),    KC_2,
-    KC_P7,   KC_P8,   KC_P9,        KC_V,         KC_F3,        KC_F4,
-    KC_P4,   KC_P5,   KC_P6,        RGB_TOG,      RGB_HUI,      RGB_MOD,
-    KC_P1,   KC_P2,   KC_P3,        KC_4,         KC_5,         KC_6)
+    KC_P7,   KC_P8,   KC_P9,      C(KC_0),      MEH(KC_W),    KC_2,
+    KC_P4,   KC_P5,   KC_P6,        KC_V,         KC_F3,        KC_F4,
+    KC_P1,   KC_P2,   KC_P3,        RGB_TOG,      G(KC_E),      RGB_MOD,
+    KC_NUM,  KC_P0,   KC_PDOT,        KC_4,         KC_5,         KC_6)
 };
 
 #if defined(ENCODER_MAP_ENABLE)
 const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
-    [0] = { ENCODER_CCW_CW(KC_LBRC, KC_RBRC), ENCODER_CCW_CW(S(KC_LBRC), S(KC_RBRC)), ENCODER_CCW_CW(S(KC_Z), (KC_Z)), ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
-    [1] = { ENCODER_CCW_CW(KC_LBRC, KC_RBRC), ENCODER_CCW_CW(S(KC_LBRC), S(KC_RBRC)), ENCODER_CCW_CW(S(KC_Z), (KC_Z)), ENCODER_CCW_CW(KC_VOLD, KC_VOLU) }
+    [0] = { ENCODER_CCW_CW(KC_LBRC, KC_RBRC), ENCODER_CCW_CW(S(KC_LBRC), S(KC_RBRC)), ENCODER_CCW_CW(C(KC_Z), C(S(KC_Z))), ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
+    [1] = { ENCODER_CCW_CW(KC_LBRC, KC_RBRC), ENCODER_CCW_CW(S(KC_LBRC), S(KC_RBRC)), ENCODER_CCW_CW(C(KC_Z), C(S(KC_Z))), ENCODER_CCW_CW(KC_VOLD, KC_VOLU) }
 };
 #endif
 // clang-format on
@@ -64,7 +66,5 @@ void keyboard_post_init_user(void) {
 
 bool oled_task_user(void) {
     render_anim();
-    check_encoder_changes(&move_right, &blend_factor, &state);
-    incremental_pan(&pan_offset, &blend_factor);
     return false;
 }
