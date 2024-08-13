@@ -8,7 +8,9 @@
 	"diode_direction": "COL2ROW",
 	"split": {
 		"enabled": true,
-		"soft_serial_pin": "GP0",
+		"main": "left",
+		"soft_serial_pin": "GP1",
+		"transport": { "protocol": "serial" },
 		"usb_detect": {
 			"enabled": true,
 			"polling_interval": 1,
@@ -23,13 +25,13 @@
 	"features": {
 		"bootmagic": false,
 		"command": true,
-		"console": true,
+		"console": false,
 		"extrakey": true,
 		"mousekey": false,
 		"nkro": true
 	},
 	"build": {
-		"lto": false
+		"lto": true
 	},
 	"matrix_pins": {
 		"cols": [

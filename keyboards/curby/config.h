@@ -47,12 +47,12 @@
 /*#define RMKB_SIO_DRIVER SIOD0*/
 /*#define RMKB_SIO_TX_PIN GP0*/
 /*#define RMKB_SIO_RX_PIN GP1*/
-/**/
+
 // Needed for ARM platforms, as there is no PROGMEM
 #ifndef pgm_read_byte_near
 #define pgm_read_byte_near(addr) pgm_read_byte(addr)
 #endif
 
 
-
-#define MASTER_LEFT
+#define USB_SUSPEND_WAKEUP_DELAY 250
+/*#define MASTER_LEFT*/
