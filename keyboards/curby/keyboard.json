@@ -18,7 +18,7 @@
 		},
 		"matrix_pins": {
 			"right": {
-				"cols": ["GP23", "GP21", "GP14", "GP13", "GP12", "GP11"]
+				"rows": ["GP23", "GP21", "GP14", "GP13", "GP12"]
 			}
 		}
 	},
@@ -34,21 +34,8 @@
 		"lto": true
 	},
 	"matrix_pins": {
-		"cols": [
-			"GP29",
-			"GP28",
-			"GP27",
-			"GP26",
-			"GP22",
-			"GP20",
-			"GP23",
-			"GP21",
-			"GP14",
-			"GP13",
-			"GP12",
-			"GP11"
-		],
-		"rows": ["GP4", "GP6", "GP7", "GP8", "GP3"]
+		"cols": ["GP4", "GP6", "GP7", "GP8", "GP9", "GP2"],
+		"rows": ["GP20", "GP22", "GP26", "GP27", "GP29"]
 	},
 	"url": "",
 	"usb": {

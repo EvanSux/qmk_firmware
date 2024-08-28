@@ -1,0 +1,40 @@
+{
+	"manufacturer": "evau",
+	"keyboard_name": "bootleg_streamdeck",
+	"maintainer": "evau",
+	"processor": "atmega32u4",
+	"bootloader": "caterina",
+	"build": {
+		"lto": true
+	},
+	"features": {
+		"bootmagic": false,
+		"command": false,
+		"console": false,
+		"extrakey": true,
+		"mousekey": false,
+		"nkro": false
+	},
+	"matrix_pins": {
+		"direct": [["B1", "B3"], ["B2", "B6"]]
+	},
+	"encoder": {
+		"rotary": [{ "pin_a": "B4", "pin_b": "B5" }]
+	},
+	"url": "",
+	"usb": {
+		"device_version": "1.0.0",
+		"pid": "0x6561",
+		"vid": "0x1738"
+	},
+	"layouts": {
+		"LAYOUT": {
+			"layout": [
+				{ "matrix": [0, 0], "x": 0, "y": 0 },
+				{ "matrix": [1, 0], "x": 0, "y": 1 },
+				{ "matrix": [0, 1], "x": 1, "y": 0 },
+				{ "matrix": [1, 1], "x": 1, "y": 1 }
+			]
+		}
+	}
+}
