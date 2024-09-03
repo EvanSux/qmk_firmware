@@ -9,11 +9,13 @@
 	},
 	"features": {
 		"bootmagic": false,
-		"command": false,
+		"command": true,
 		"console": false,
+		"encoder": true,
 		"extrakey": true,
 		"mousekey": false,
-		"nkro": false
+		"nkro": false,
+		"rgblight": false
 	},
 	"matrix_pins": {
 		"direct": [["B1", "B3"], ["B2", "B6"]]
